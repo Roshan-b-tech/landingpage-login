@@ -1,0 +1,38 @@
+services:
+  # Backend API Service
+  - type: web
+    name: popx-api
+    env: node
+    region: oregon  # Choose the region closest to your users
+    plan: free  # Using Render's free plan
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: FRONTEND_URL
+        fromService:
+          name: popx-frontend
+          type: web
+          property: url
+
+  # Frontend Service
+  - type: web
+    name: popx-frontend
+    env: static
+    region: oregon  # Choose the region closest to your users
+    plan: free  # Using Render's free plan
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          name: popx-api
+          type: web
+          property: url
+        postfix: /api 
